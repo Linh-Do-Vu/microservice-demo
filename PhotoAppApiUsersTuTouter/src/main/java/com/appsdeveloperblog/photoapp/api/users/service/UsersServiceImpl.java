@@ -17,12 +17,12 @@ import com.appsdeveloperblog.photoapp.api.users.data.*;
 
 @Service
 public class UsersServiceImpl implements UsersService {
-	
+
 	UsersRepository usersRepository;
 	BCryptPasswordEncoder bCryptPasswordEncoder;
 	
 	@Autowired
-	public UsersServiceImpl(UsersRepository usersRepository, BCryptPasswordEncoder bCryptPasswordEncoder)
+	public UsersServiceImpl(UsersRepository usersRepository,BCryptPasswordEncoder bCryptPasswordEncoder)
 	{
 		this.usersRepository = usersRepository;
 		this.bCryptPasswordEncoder = bCryptPasswordEncoder;

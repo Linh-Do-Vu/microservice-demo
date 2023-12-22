@@ -17,36 +17,37 @@ import com.appsdeveloperblog.photoapp.api.users.service.UsersService;
 @Configuration
 @EnableWebSecurity
 public class WebSecurity {
-	
+
 	private UsersService usersService;
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
-	
+
 	public WebSecurity(UsersService usersService, BCryptPasswordEncoder bCryptPasswordEncoder) {
 		this.usersService = usersService;
 		this.bCryptPasswordEncoder = bCryptPasswordEncoder;
 	}
-    
+
     @Bean
     protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
-    	
+
     	// Configure AuthenticationManagerBuilder
-    	AuthenticationManagerBuilder authenticationManagerBuilder = 
+    	AuthenticationManagerBuilder authenticationManagerBuilder =
     			http.getSharedObject(AuthenticationManagerBuilder.class);
-    	
+
     	authenticationManagerBuilder.userDetailsService(usersService)
     	.passwordEncoder(bCryptPasswordEncoder);
-    	
+
     	AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
-    	
+
     	http.csrf((csrf) -> csrf.disable());
-  
+
     	http.authorizeHttpRequests((authz) -> authz
-        .requestMatchers(HttpMethod.POST, "/users").permitAll()
-        .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll())
+        .requestMatchers(HttpMethod.POST, "/users/**").permitAll()
+        .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
+        .requestMatchers(new AntPathRequestMatcher("/h2-console /**")).permitAll())
         .authenticationManager(authenticationManager)
         .sessionManagement((session) -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
- 
+
     	http.headers((headers) -> headers.frameOptions((frameOptions) -> frameOptions.sameOrigin()));
         return http.build();
 
