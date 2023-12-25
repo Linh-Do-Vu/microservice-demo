@@ -43,8 +43,7 @@ public class WebSecurity {
     	http.authorizeHttpRequests((authz) -> authz
         .requestMatchers(HttpMethod.POST, "/users/**").permitAll()
         .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
-        .requestMatchers(new AntPathRequestMatcher("/h2-console /**")).permitAll())
-        .authenticationManager(authenticationManager)
+        .requestMatchers(new AntPathRequestMatcher("/h2-console /**")).permitAll()).addFilter(new AuthenticationFilter(authenticationManager)).authenticationManager((authenticationManager))
         .sessionManagement((session) -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
