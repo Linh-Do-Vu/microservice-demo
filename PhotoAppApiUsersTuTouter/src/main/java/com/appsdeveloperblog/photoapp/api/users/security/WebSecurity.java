@@ -2,6 +2,7 @@ package com.appsdeveloperblog.photoapp.api.users.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -17,13 +18,14 @@ import com.appsdeveloperblog.photoapp.api.users.service.UsersService;
 @Configuration
 @EnableWebSecurity
 public class WebSecurity {
-
+	private  Environment environment ;
 	private UsersService usersService;
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-	public WebSecurity(UsersService usersService, BCryptPasswordEncoder bCryptPasswordEncoder) {
+	public WebSecurity(UsersService usersService, BCryptPasswordEncoder bCryptPasswordEncoder,Environment environment) {
 		this.usersService = usersService;
 		this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+		this.environment = environment ;
 	}
 
     @Bean
@@ -43,7 +45,9 @@ public class WebSecurity {
     	http.authorizeHttpRequests((authz) -> authz
         .requestMatchers(HttpMethod.POST, "/users/**").permitAll()
         .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
-        .requestMatchers(new AntPathRequestMatcher("/h2-console /**")).permitAll()).addFilter(new AuthenticationFilter(authenticationManager)).authenticationManager((authenticationManager))
+        .requestMatchers(new AntPathRequestMatcher("/h2-console /**")).permitAll())
+				.addFilter(new AuthenticationFilter(authenticationManager,environment,usersService))
+				.authenticationManager((authenticationManager))
         .sessionManagement((session) -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
