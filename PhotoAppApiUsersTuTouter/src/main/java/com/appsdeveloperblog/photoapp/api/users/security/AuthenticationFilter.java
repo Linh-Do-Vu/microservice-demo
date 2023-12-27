@@ -4,6 +4,8 @@ import com.appsdeveloperblog.photoapp.api.users.service.UsersService;
 import com.appsdeveloperblog.photoapp.api.users.shared.UserDto;
 import com.appsdeveloperblog.photoapp.api.users.ui.model.LoginRequestModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,8 +18,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import javax.security.auth.kerberos.EncryptionKey;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Date;
 
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private UsersService usersService;
@@ -48,7 +56,19 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                                             FilterChain chain,
                                             Authentication authResult)
             throws IOException, ServletException {
-        String userName = ((User)authResult.getPrincipal()).getUsername() ;
-        UserDto userDetail = usersService.getUserDetailsByEmail(userName) ;
+        String userName = ((User) authResult.getPrincipal()).getUsername();
+        UserDto userDetail = usersService.getUserDetailsByEmail(userName);
+        String tokenSecret = environment.getProperty("token.secret");
+        byte[] secretKeyBytes = Base64.getEncoder().encode(tokenSecret.getBytes());
+        SecretKey secretKey = new SecretKeySpec(secretKeyBytes, SignatureAlgorithm.HS512.getJcaName());
+       String token =  Jwts.builder().setSubject(userDetail.getUserId())
+                .setExpiration(Date.from(Instant.now()
+                        .plusMillis(Long.parseLong(environment.getProperty("token.expiration_time")))))
+                .setIssuedAt(new Date())
+                .signWith(secretKey, SignatureAlgorithm.ES512)
+                .compact();
+        response.addHeader("token",token);
+        response.addHeader("userId",userDetail.getUserId());
+
     }
 }
