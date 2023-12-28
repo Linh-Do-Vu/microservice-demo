@@ -39,14 +39,15 @@ public class WebSecurity {
     	.passwordEncoder(bCryptPasswordEncoder);
 
     	AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
-
-    	http.csrf((csrf) -> csrf.disable());
-
+		AuthenticationFilter authenticationFilter =
+				new AuthenticationFilter(authenticationManager, environment,usersService);
+		authenticationFilter.setFilterProcessesUrl(environment.getProperty("login.url.path"));
+		http.csrf((csrf) -> csrf.disable());
     	http.authorizeHttpRequests((authz) -> authz
         .requestMatchers(HttpMethod.POST, "/users/**").permitAll()
         .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
-        .requestMatchers(new AntPathRequestMatcher("/h2-console /**")).permitAll())
-				.addFilter(new AuthenticationFilter(authenticationManager,environment,usersService))
+        .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll())
+				.addFilter(authenticationFilter)
 				.authenticationManager((authenticationManager))
         .sessionManagement((session) -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
