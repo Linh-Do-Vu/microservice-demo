@@ -39,13 +39,15 @@ public class WebSecurity {
     	.passwordEncoder(bCryptPasswordEncoder);
 
     	AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
+
 		AuthenticationFilter authenticationFilter =
 				new AuthenticationFilter(authenticationManager, environment,usersService);
 		authenticationFilter.setFilterProcessesUrl(environment.getProperty("login.url.path"));
 		http.csrf((csrf) -> csrf.disable());
+
     	http.authorizeHttpRequests((authz) -> authz
-        .requestMatchers(HttpMethod.POST, "/users/**").permitAll()
-        .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
+        .requestMatchers(HttpMethod.POST, "/users").permitAll()
+//        .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
         .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll())
 				.addFilter(authenticationFilter)
 				.authenticationManager((authenticationManager))

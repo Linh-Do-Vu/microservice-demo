@@ -10,12 +10,12 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.catalina.User;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.crypto.SecretKey;
@@ -56,19 +56,34 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                                             FilterChain chain,
                                             Authentication authResult)
             throws IOException, ServletException {
+//        String userName = ((User) authResult.getPrincipal()).getUsername();
+//        UserDto userDetail = usersService.getUserDetailsByEmail(userName);
+//        String tokenSecret = environment.getProperty("token.secret");
+//        byte[] secretKeyBytes = Base64.getEncoder().encode(tokenSecret.getBytes());
+//        SecretKey secretKey = new SecretKeySpec(secretKeyBytes, SignatureAlgorithm.HS512.getJcaName());
+//       String token =  Jwts.builder().setSubject(userDetail.getUserId())
+//                .setExpiration(Date.from(Instant.now()
+//                        .plusMillis(Long.parseLong(environment.getProperty("token.expiration_time")))))
+//                .setIssuedAt(new Date())
+//                .signWith(secretKey, SignatureAlgorithm.ES512)
+//                .compact();
+//        response.addHeader("token",token);
+//        response.addHeader("userId",userDetail.getUserId());
         String userName = ((User) authResult.getPrincipal()).getUsername();
-        UserDto userDetail = usersService.getUserDetailsByEmail(userName);
+        UserDto userDetails = usersService.getUserDetailsByEmail(userName);
         String tokenSecret = environment.getProperty("token.secret");
         byte[] secretKeyBytes = Base64.getEncoder().encode(tokenSecret.getBytes());
         SecretKey secretKey = new SecretKeySpec(secretKeyBytes, SignatureAlgorithm.HS512.getJcaName());
-       String token =  Jwts.builder().setSubject(userDetail.getUserId())
-                .setExpiration(Date.from(Instant.now()
-                        .plusMillis(Long.parseLong(environment.getProperty("token.expiration_time")))))
-                .setIssuedAt(new Date())
-                .signWith(secretKey, SignatureAlgorithm.ES512)
-                .compact();
-        response.addHeader("token",token);
-        response.addHeader("userId",userDetail.getUserId());
+
+        Instant now = Instant.now();
+
+        String token = Jwts.builder().setSubject(userDetails.getUserId())
+                .setExpiration(
+                        Date.from(now.plusMillis(Long.parseLong(environment.getProperty("token.expiration_time")))))
+                .setIssuedAt(Date.from(now)).signWith(secretKey, SignatureAlgorithm.HS512).compact();
+
+        response.addHeader("token", token);
+        response.addHeader("userId", userDetails.getUserId());
 
     }
 }
