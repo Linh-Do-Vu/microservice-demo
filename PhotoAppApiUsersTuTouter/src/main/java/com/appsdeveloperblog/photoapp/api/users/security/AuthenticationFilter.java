@@ -56,19 +56,6 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                                             FilterChain chain,
                                             Authentication authResult)
             throws IOException, ServletException {
-//        String userName = ((User) authResult.getPrincipal()).getUsername();
-//        UserDto userDetail = usersService.getUserDetailsByEmail(userName);
-//        String tokenSecret = environment.getProperty("token.secret");
-//        byte[] secretKeyBytes = Base64.getEncoder().encode(tokenSecret.getBytes());
-//        SecretKey secretKey = new SecretKeySpec(secretKeyBytes, SignatureAlgorithm.HS512.getJcaName());
-//       String token =  Jwts.builder().setSubject(userDetail.getUserId())
-//                .setExpiration(Date.from(Instant.now()
-//                        .plusMillis(Long.parseLong(environment.getProperty("token.expiration_time")))))
-//                .setIssuedAt(new Date())
-//                .signWith(secretKey, SignatureAlgorithm.ES512)
-//                .compact();
-//        response.addHeader("token",token);
-//        response.addHeader("userId",userDetail.getUserId());
         String userName = ((User) authResult.getPrincipal()).getUsername();
         UserDto userDetails = usersService.getUserDetailsByEmail(userName);
         String tokenSecret = environment.getProperty("token.secret");
